@@ -28,6 +28,7 @@ dependencies = [
   "av==16.1.0",
   "setuptools==80.10.2",
   "wheel==0.46.3",
+  "opencv-python==4.13.0.90",
 ]
 
 [tool.uv.sources]
