@@ -1,4 +1,4 @@
-import os, torchvision, transformers, tqdm, time, json
+import os, torchvision, transformers, tqdm, time, json, argparse, sys
 import torch.multiprocessing as mp
 
 from data.utils import ffmpeg_once
@@ -8,18 +8,18 @@ logger = transformers.logging.get_logger('liveinfer')
 
 # python -m demo.cli --resume_from_checkpoint ... 
 
-def main(liveinfer: LiveInfer):
-    src_video_path = 'demo/assets/cooking.mp4'
+def main(liveinfer: LiveInfer, src_video_path: str, query: str):
     name, ext = os.path.splitext(src_video_path)
     ffmpeg_video_path = os.path.join('demo/assets/cache', name + f'_{liveinfer.frame_fps}fps_{liveinfer.frame_resolution}' + ext)
-    save_history_path = src_video_path.replace('.mp4', '.json')
+    save_history_path = os.path.splitext(src_video_path)[0] + '.json'
     if not os.path.exists(ffmpeg_video_path):
         os.makedirs(os.path.dirname(ffmpeg_video_path), exist_ok=True)
         ffmpeg_once(src_video_path, ffmpeg_video_path, fps=liveinfer.frame_fps, resolution=liveinfer.frame_resolution)
         logger.warning(f'{src_video_path} -> {ffmpeg_video_path}, {liveinfer.frame_fps} FPS, {liveinfer.frame_resolution} Resolution')
     
     liveinfer.load_video(ffmpeg_video_path)
-    liveinfer.input_query_stream('Please narrate the video in real time.', video_time=0.0)
+    if query:
+        liveinfer.input_query_stream(query, video_time=0.0)
     # liveinfer.input_query_stream('Hi, who are you?', video_time=1.0)
     # liveinfer.input_query_stream('Yes, I want to check its safety.', video_time=3.0)
     # liveinfer.input_query_stream('No, I am going to install something to alert pedestrians to move aside. Could you guess what it is?', video_time=12.5)
@@ -49,5 +49,10 @@ def main(liveinfer: LiveInfer):
     print(f'The conversation history has been saved to {save_history_path}.')
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--src_video_path', default='demo/assets/cooking.mp4')
+    parser.add_argument('--query', default='Please narrate the video in real time.')
+    cli_args, remaining = parser.parse_known_args()
+    sys.argv = [sys.argv[0]] + remaining
     liveinfer = LiveInfer()
-    main(liveinfer)
+    main(liveinfer, cli_args.src_video_path, cli_args.query)

@@ -98,7 +98,10 @@ python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus -
 
 - (Recommended) Launch the CLI locally with:
 ```bash
-python -m demo.cli --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
+python -m demo.cli \
+--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus \
+--src_video_path /path/to/video.mp4 \
+--query "Please narrate the video in real time."
 ```
 
 - (Deprecated, HF Spaces too slow) Try demo at <a href="https://huggingface.co/spaces/chenjoya/videollm-online" target="_blank"> <img alt="Demo" src="https://img.shields.io/badge/🤗 Hugging Face Spaces-ffc107?color=ffc107" /> </a>
