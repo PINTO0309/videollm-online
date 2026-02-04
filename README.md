@@ -106,6 +106,7 @@ python -m demo.cli \
 python -m demo.stream_cli \
 --source video \
 --video_path /path/to/video.mp4 \
+--frame_token_interval_threshold 0.9 \
 --output_interval 3 \
 --input_fps 10 \
 --query "Please narrate the video in real time." \
@@ -114,6 +115,7 @@ python -m demo.stream_cli \
 python -m demo.stream_cli \
 --source webcam \
 --webcam_index 0 \
+--frame_token_interval_threshold 0.9 \
 --output_interval 3 \
 --input_fps 10 \
 --query "Please narrate the video in real time." \

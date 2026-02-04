@@ -20,6 +20,7 @@ def _parse_cli_args():
     parser.add_argument("--input_fps", type=float, default=None)
     parser.add_argument("--output_interval", type=float, default=3.0)
     parser.add_argument("--query", default="Please narrate the video in real time.")
+    parser.add_argument("--frame_token_interval_threshold", type=float, default=None)
     parser.add_argument("--pad_color", default="0,0,0")
     return parser.parse_known_args()
 
@@ -100,6 +101,8 @@ def main():
     cli_args, remaining = _parse_cli_args()
     sys.argv = [sys.argv[0]] + remaining
     liveinfer = LiveInfer()
+    if cli_args.frame_token_interval_threshold is not None:
+        liveinfer.frame_token_interval_threshold = cli_args.frame_token_interval_threshold
 
     pad_color_rgb = _parse_pad_color(cli_args.pad_color)
     cap = _open_capture(cli_args.source, cli_args.video_path, cli_args.webcam_index)

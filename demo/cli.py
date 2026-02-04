@@ -52,7 +52,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--src_video_path', default='demo/assets/cooking.mp4')
     parser.add_argument('--query', default='Please narrate the video in real time.')
+    parser.add_argument('--frame_token_interval_threshold', type=float, default=None)
     cli_args, remaining = parser.parse_known_args()
     sys.argv = [sys.argv[0]] + remaining
     liveinfer = LiveInfer()
+    if cli_args.frame_token_interval_threshold is not None:
+        liveinfer.frame_token_interval_threshold = cli_args.frame_token_interval_threshold
     main(liveinfer, cli_args.src_video_path, cli_args.query)
