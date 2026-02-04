@@ -1,4 +1,4 @@
-import random, torch, tqdm, os, subprocess, torchvision, pathlib, submitit, math
+import random, torch, tqdm, os, subprocess, torchvision, pathlib, submitit, math, shutil
 from itertools import takewhile
 try:
     torchvision.set_video_backend('video_reader')
@@ -50,8 +50,25 @@ def temporal_iou(region1, region2):
 
 def ffmpeg_once(src_path: str, dst_path: str, *, fps: int = None, resolution: int = None, pad: str = '#000000', mode='bicubic'):
     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    ffmpeg_candidates = [
+        repo_root / 'ffmpeg' / 'ffmpeg',
+        repo_root / 'ffmpeg' / 'bin' / 'ffmpeg',
+    ]
+    ffmpeg_path = None
+    for candidate in ffmpeg_candidates:
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            ffmpeg_path = str(candidate)
+            break
+    if ffmpeg_path is None:
+        ffmpeg_path = shutil.which('ffmpeg')
+    if ffmpeg_path is None:
+        tried = ', '.join(str(p) for p in ffmpeg_candidates)
+        raise FileNotFoundError(
+            f'ffmpeg executable not found. Tried: {tried} and system PATH.'
+        )
     command = [
-        './ffmpeg/ffmpeg',
+        ffmpeg_path,
         '-y',
         '-sws_flags', mode,
         '-i', src_path,
