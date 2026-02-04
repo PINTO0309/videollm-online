@@ -59,7 +59,28 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
         gr_video_time = gr.Number(value=0, visible=False)
         gr_liveinfer_queue_refresher = gr.Number(value=False, visible=False)
 
+        def _normalize_history(history):
+            if history is None:
+                return []
+            normalized = []
+            for item in history:
+                if item is None:
+                    continue
+                if isinstance(item, tuple):
+                    normalized.append([item[0], item[1]])
+                elif isinstance(item, list):
+                    if len(item) >= 2:
+                        normalized.append([item[0], item[1]])
+                    elif len(item) == 1:
+                        normalized.append([item[0], ""])
+                    else:
+                        normalized.append(["", ""])
+                else:
+                    normalized.append([str(item), ""])
+            return normalized
+
         def gr_video_change(src_video_path, history, video_time, gate):
+            history = _normalize_history(history)
             name, ext = os.path.splitext(src_video_path)
             ffmpeg_video_path = os.path.join('demo/assets/cache', name + f'_{liveinfer.frame_fps}fps_{liveinfer.frame_resolution}' + ext)
             if not os.path.exists(ffmpeg_video_path):
@@ -70,7 +91,7 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
             liveinfer.input_video_stream(0)
             query, response = liveinfer()
             if query or response:
-                history.append((query, response))
+                history.append([query, response])
             return history, video_time + 1 / liveinfer.frame_fps, not gate
         gr_video.change(
             gr_video_change, inputs=[gr_video, gr_chat_interface.chatbot, gr_video_time, gr_liveinfer_queue_refresher], 
@@ -83,10 +104,16 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
         gr_video_time.change(gr_video_time_change, [gr_video, gr_video_time], [gr_video_time], js=get_gr_video_current_time)
 
         def gr_liveinfer_queue_refresher_change(history):
+            history = _normalize_history(history)
             while True:
                 query, response = liveinfer()
                 if query or response:
-                    history[-1][1] += f'\n{response}'
+                    if not history or query:
+                        history.append([query or "", response or ""])
+                    else:
+                        current = history[-1][1] or ""
+                        if response:
+                            history[-1][1] = f'{current}\n{response}' if current else response
                 yield history
         gr_liveinfer_queue_refresher.change(gr_liveinfer_queue_refresher_change, inputs=[gr_chat_interface.chatbot], outputs=[gr_chat_interface.chatbot])
     

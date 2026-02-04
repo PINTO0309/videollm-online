@@ -92,7 +92,7 @@ python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
 
 But if there are some bugs with flash-attn, try to use
 
-```
+```bash
 python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus --attn_implementation sdpa
 ```
 
