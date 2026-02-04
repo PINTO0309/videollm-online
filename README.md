@@ -68,6 +68,13 @@ Ensure you have Miniconda and Python version >= 3.10 installed, then run:
 - Install dependencies
 
   ```bash
+  # Fix CUDA PATH if necessary
+  # Required if multiple versions of CUDA are installed
+  # CUDA 13.x is not supported by any packages
+  export CUDA_HOME=/usr/local/cuda-12.8
+  export PATH=/usr/local/cuda-12.8/bin:$PATH
+  export LD_LIBRARY_PATH=/usr/local/cuda-12.8/lib64:$LD_LIBRARY_PATH
+
   # Fix CUDA GPU Compute Capability to prevent unnecessary binary bloat
   # RTX3070 = 8.6
   # RTX6000 Ada = 8.9
