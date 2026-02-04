@@ -24,6 +24,7 @@ dependencies = [
   "vocos==0.1.0",
   "vector_quantize_pytorch==1.27.20",
   "av==16.1.0",
+  "setuptools==80.10.2",
 ]
 
 [tool.uv.sources]
