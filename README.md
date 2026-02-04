@@ -80,6 +80,11 @@ Ensure you have Miniconda and Python version >= 3.10 installed, then run:
 
 ### Quick Start
 
+You will need to open the two HF repositories below and agree to the license terms for each.
+
+1. https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct
+2. https://huggingface.co/chenjoya/videollm-online-8b-v1plus
+
 - (Recommended) Launch the gradio demo locally with:
 ```bash
 python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
