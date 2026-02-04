@@ -102,6 +102,22 @@ python -m demo.cli \
 --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus \
 --src_video_path /path/to/video.mp4 \
 --query "Please narrate the video in real time."
+
+python -m demo.stream_cli \
+--source video \
+--video_path /path/to/video.mp4 \
+--output_interval 3 \
+--input_fps 10 \
+--query "Please narrate the video in real time." \
+--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
+
+python -m demo.stream_cli \
+--source webcam \
+--webcam_index 0 \
+--output_interval 3 \
+--input_fps 10 \
+--query "Please narrate the video in real time." \
+--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
 ```
 
 - (Deprecated, HF Spaces too slow) Try demo at <a href="https://huggingface.co/spaces/chenjoya/videollm-online" target="_blank"> <img alt="Demo" src="https://img.shields.io/badge/🤗 Hugging Face Spaces-ffc107?color=ffc107" /> </a>

@@ -106,6 +106,15 @@ class LiveInfer:
             self.frame_embeds_queue.extend([(r / self.frame_fps, frame_embeds) for r, frame_embeds in zip(ranger, frames_embeds)])
         self.last_frame_idx = frame_idx
         self.video_time = video_time
+
+    def input_frame_tensor(self, frame: torch.Tensor, video_time: float):
+        if frame.dim() == 3:
+            frame = frame.unsqueeze(0)
+        frame = frame.to('cuda', non_blocking=True)
+        frame_embeds = self.model.visual_embed(frame).split(self.frame_num_tokens)
+        if frame_embeds:
+            self.frame_embeds_queue.append((video_time, frame_embeds[0]))
+        self.video_time = video_time
     
     def load_video(self, video_path):
         self.video_tensor = read_video(video_path, pts_unit='sec', output_format='TCHW')[0].to('cuda')
@@ -116,6 +125,15 @@ class LiveInfer:
     def __call__(self, ):
         while not self.frame_embeds_queue:
             continue
+        video_time, query = self._call_for_streaming()
+        response = None
+        if video_time is not None:
+            query, response = self._call_for_response(video_time, query)
+        return query, response
+
+    def step(self):
+        if not self.frame_embeds_queue:
+            return None, None
         video_time, query = self._call_for_streaming()
         response = None
         if video_time is not None:
