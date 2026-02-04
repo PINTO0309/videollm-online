@@ -88,7 +88,7 @@ Ensure you have Miniconda and Python version >= 3.10 installed, then run:
 
   uv sync
 
-  git clone git+https://github.com/2noise/ChatTTS
+  git clone https://github.com/2noise/ChatTTS
   mv ChatTTS demo/rendering/
   ```
 
