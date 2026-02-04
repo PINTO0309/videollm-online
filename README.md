@@ -6,12 +6,12 @@
 <a href="https://huggingface.co/chenjoya/videollm-online-8b-v1plus" target="_blank"><img alt="Checkpoint" src="https://img.shields.io/badge/🤗 Hugging Face Models-2980b9?color=2980b9" /></a>
 <a href="https://huggingface.co/datasets/chenjoya/videollm-online-chat-ego4d-134k" target="_blank"><img alt="Data" src="https://img.shields.io/badge/🤗 Hugging Face Datasets-8e44ad?color=8e44ad" /></a>
 
-## Updates 
+## Updates
 
-### 2025-09-03 
+### 2025-09-03
 I made some updates to make sure this repo can be inference with the latest transformers==4.55.4 and pytorch==2.7.1+cu128. Similar versions should be okay. If you want to obtain a strong VLM-online model, I highly recommend you to finetune Qwen2.5VL-Instruct with the streaming EOS loss here. No need to use the weak text-only Llama3 again.
 
-### 2025-04-24 
+### 2025-04-24
 Updates! Our new paper: [LiveCC: Learning Video LLM with Streaming Speech Transcription at Scale](https://huggingface.co/papers/2504.16030). All resources, including the training video data, have been released at [LiveCC Webpage](https://showlab.github.io/livecc/)
 
 ### TLDR
@@ -37,7 +37,7 @@ This is the official implementation of [VideoLLM-online: Online Video Large Lang
 python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
 ```
 
-But if there are some bugs with flash-attn, try to use 
+But if there are some bugs with flash-attn, try to use
 
 ```
 python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus --attn_implementation sdpa
@@ -55,27 +55,35 @@ By passing ```--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus```, th
 ### Installation
 
 Ensure you have Miniconda and Python version >= 3.10 installed, then run:
-```sh
-conda install -y pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
-pip install transformers accelerate deepspeed peft editdistance Levenshtein tensorboard gradio moviepy submitit
-pip install flash-attn --no-build-isolation
-```
 
-PyTorch source will make ffmpeg installed, but it is an old version and usually make very low quality preprocessing. Please install newest ffmpeg following:
-```sh
-wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
-tar xvf ffmpeg-release-amd64-static.tar.xz
-rm ffmpeg-release-amd64-static.tar.xz
-mv ffmpeg-7.0.2-amd64-static ffmpeg
-```
+- ffmpeg 7.x must be installed first
+  - PyTorch source will make ffmpeg installed, but it is an old version and usually make very low quality preprocessing. Please install newest ffmpeg following:
 
-If you want to try our model with the audio in real-time streaming, please also clone ChatTTS.
+    ```bash
+    wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz
+    tar xvf ffmpeg-release-amd64-static.tar.xz
+    rm ffmpeg-release-amd64-static.tar.xz
+    mv ffmpeg-7.0.2-amd64-static ffmpeg
+    ```
+- Install dependencies
 
-```sh
-pip install omegaconf vocos vector_quantize_pytorch cython
-git clone git+https://github.com/2noise/ChatTTS
-mv ChatTTS demo/rendering/
-```
+  ```bash
+  # Fix CUDA GPU Compute Capability to prevent unnecessary binary bloat
+  # RTX3070 = 8.6
+  # RTX6000 Ada = 8.9
+  # https://developer.nvidia.com/cuda/gpus
+  export TORCH_CUDA_ARCH_LIST="8.9"
+  # Required to avoid out of memory
+  # Even with 128GB RAM, the default settings cause OOM
+  # By limiting the number of parallel builds to 2,
+  # the RAM consumption limit can be kept to around 50GB.
+  export MAX_JOBS=2
+
+  uv sync
+
+  git clone git+https://github.com/2noise/ChatTTS
+  mv ChatTTS demo/rendering/
+  ```
 
 ### Training and Evaluation
 
@@ -97,9 +105,9 @@ mv ChatTTS demo/rendering/
     * Frame FPS: 2 for training, 2~10 for inference
     * Frame Resolution: max resolution 384, with zero-padding to keep aspect ratio
     * Video Length: 10 minutes
-* Training Data: Ego4D Narration Stream 113K + Ego4D GoalStep Stream 21K 
+* Training Data: Ego4D Narration Stream 113K + Ego4D GoalStep Stream 21K
 
-#### [VideoLLM-online-8B-v1](...) 
+#### [VideoLLM-online-8B-v1](...)
 * LLM: meta-llama/Meta-Llama-3-8B-Instruct
 * Vision Strategy:
     * Frame Encoder: google/siglip-large-patch16-384
@@ -107,7 +115,7 @@ mv ChatTTS demo/rendering/
     * Frame FPS: 2 for training, 2~10 for inference
     * Frame Resolution: max resolution 384, with zero-padding to keep aspect ratio
     * Video Length: 60 minutes
-* Training Data: Ego4D Narration Stream 113K + Ego4D GoalStep Stream 21K 
+* Training Data: Ego4D Narration Stream 113K + Ego4D GoalStep Stream 21K
 
 ### VideoLLM-online beyond Llama
 

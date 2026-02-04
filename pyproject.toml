@@ -1,0 +1,39 @@
+[project]
+name = "videollm-online"
+version = "0.0.0"
+description = "Online Video LLM for streaming video."
+readme = "README.md"
+requires-python = "==3.10.19"
+dependencies = [
+  "accelerate==1.12.0",
+  "cython==3.2.4",
+  "deepspeed==0.18.5",
+  "editdistance==0.8.1",
+  "gradio==6.5.1",
+  "Levenshtein==0.27.3",
+  "moviepy==2.2.1",
+  "peft==0.18.1",
+  "submitit==1.5.4",
+  "tensorboard==2.20.0",
+  "transformers==4.55.4",
+  "torch==2.10.0+cu128",
+  "torchvision==0.25.0+cu128",
+  "torchaudio==2.10.0+cu128",
+  "flash-attn==2.8.3",
+  "omegaconf==2.3.0",
+  "vocos==0.1.0",
+  "vector_quantize_pytorch==1.27.20",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
+torchaudio = { index = "pytorch-cu128" }
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.extra-build-dependencies]
+flash-attn = ["torch"]
