@@ -30,28 +30,6 @@ This is the official implementation of [VideoLLM-online: Online Video Large Lang
 
 - **Parallelized Real-Time Inference**: Our inference method **parallelizes** video encoding, LLM forwarding for video frames, and LLM response generation, arranging them asynchronously. This significantly enhances real-time performance, achieving 10-15 FPS on an A100 GPU.
 
-### Quick Start
-
-- (Recommended) Launch the gradio demo locally with:
-```sh
-python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
-```
-
-But if there are some bugs with flash-attn, try to use
-
-```
-python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus --attn_implementation sdpa
-```
-
-- (Recommended) Launch the CLI locally with:
-```sh
-python -m demo.cli --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
-```
-
-- (Deprecated, HF Spaces too slow) Try demo at <a href="https://huggingface.co/spaces/chenjoya/videollm-online" target="_blank"> <img alt="Demo" src="https://img.shields.io/badge/🤗 Hugging Face Spaces-ffc107?color=ffc107" /> </a>
-
-By passing ```--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus```, the PEFT checkpoint will be automatically downloaded and applied to ```meta-llama/Meta-Llama-3-8B-Instruct```.
-
 ### Installation
 
 Ensure you have Miniconda and Python version >= 3.10 installed, then run:
@@ -90,7 +68,31 @@ Ensure you have Miniconda and Python version >= 3.10 installed, then run:
 
   git clone https://github.com/2noise/ChatTTS
   mv ChatTTS demo/rendering/
+
+  source .venv/bin/activate
   ```
+
+### Quick Start
+
+- (Recommended) Launch the gradio demo locally with:
+```bash
+python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
+```
+
+But if there are some bugs with flash-attn, try to use
+
+```
+python -m demo.app --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus --attn_implementation sdpa
+```
+
+- (Recommended) Launch the CLI locally with:
+```bash
+python -m demo.cli --resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
+```
+
+- (Deprecated, HF Spaces too slow) Try demo at <a href="https://huggingface.co/spaces/chenjoya/videollm-online" target="_blank"> <img alt="Demo" src="https://img.shields.io/badge/🤗 Hugging Face Spaces-ffc107?color=ffc107" /> </a>
+
+By passing ```--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus```, the PEFT checkpoint will be automatically downloaded and applied to ```meta-llama/Meta-Llama-3-8B-Instruct```.
 
 ### Training and Evaluation
 
