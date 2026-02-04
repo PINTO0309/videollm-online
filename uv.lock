@@ -205,18 +205,6 @@ wheels = [
 ]
 
 [[package]]
-name = "decord"
-version = "0.6.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/11/79/936af42edf90a7bd4e41a6cac89c913d4b47fa48a26b042d5129a9242ee3/decord-0.6.0-py3-none-manylinux2010_x86_64.whl", hash = "sha256:51997f20be8958e23b7c4061ba45d0efcd86bffd5fe81c695d0befee0d442976", size = 13602299, upload-time = "2021-06-14T21:30:55.486Z" },
-    { url = "https://files.pythonhosted.org/packages/6c/be/e15b5b866da452e62635a7b27513f31cb581fa2ea9cc9b768b535d62a955/decord-0.6.0-py3-none-win_amd64.whl", hash = "sha256:02665d7c4f1193a330205a791bc128f7e108eb6ae5b67144437a02f700943bad", size = 24733380, upload-time = "2021-06-14T21:30:57.766Z" },
-]
-
-[[package]]
 name = "deepspeed"
 version = "0.18.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1642,7 +1630,6 @@ dependencies = [
     { name = "accelerate" },
     { name = "av" },
     { name = "cython" },
-    { name = "decord" },
     { name = "deepspeed" },
     { name = "editdistance" },
     { name = "flash-attn" },
@@ -1664,9 +1651,8 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "accelerate", specifier = "==1.12.0" },
-    { name = "av", specifier = ">=16.1.0" },
+    { name = "av", specifier = "==16.1.0" },
     { name = "cython", specifier = "==3.2.4" },
-    { name = "decord", specifier = "==0.6.0" },
     { name = "deepspeed", specifier = "==0.18.5" },
     { name = "editdistance", specifier = "==0.8.1" },
     { name = "flash-attn", specifier = "==2.8.3" },
