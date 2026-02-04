@@ -25,6 +25,7 @@ dependencies = [
   "vector_quantize_pytorch==1.27.20",
   "av==16.1.0",
   "setuptools==80.10.2",
+  "wheel==0.46.3",
 ]
 
 [tool.uv.sources]
