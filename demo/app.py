@@ -42,11 +42,13 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
         with gr.Column():
             gr_chat_interface = gr.ChatInterface(
                 fn=liveinfer.input_query_stream,
+                type="tuples",
                 chatbot=gr.Chatbot(
                     elem_id="gr_chatbot",
                     label='chatbot',
                     avatar_images=('demo/user_avatar.png', 'demo/assistant_avatar.png'),
-                    render=False
+                    render=False,
+                    type="tuples",
                 ),
                 examples=['Please narrate the video in real time.', 'Please describe what I am doing.', 'Could you summarize what have been done?', 'Hi, guide me the next step.'],
             )
