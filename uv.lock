@@ -1625,13 +1625,15 @@ wheels = [
 [[package]]
 name = "videollm-online"
 version = "0.0.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "accelerate" },
+    { name = "antlr4-python3-runtime" },
     { name = "av" },
     { name = "cython" },
     { name = "deepspeed" },
     { name = "editdistance" },
+    { name = "encodec" },
     { name = "flash-attn" },
     { name = "gradio" },
     { name = "levenshtein" },
@@ -1653,10 +1655,12 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "accelerate", specifier = "==1.12.0" },
+    { name = "antlr4-python3-runtime", specifier = "==4.9.3" },
     { name = "av", specifier = "==16.1.0" },
     { name = "cython", specifier = "==3.2.4" },
     { name = "deepspeed", specifier = "==0.18.5" },
     { name = "editdistance", specifier = "==0.8.1" },
+    { name = "encodec", specifier = "==0.1.1" },
     { name = "flash-attn", specifier = "==2.8.3" },
     { name = "gradio", specifier = "==6.5.1" },
     { name = "levenshtein", specifier = "==0.27.3" },
@@ -1672,7 +1676,7 @@ requires-dist = [
     { name = "transformers", specifier = "==4.55.4" },
     { name = "vector-quantize-pytorch", specifier = "==1.27.20" },
     { name = "vocos", specifier = "==0.1.0" },
-    { name = "wheel", specifier = ">=0.46.3" },
+    { name = "wheel", specifier = "==0.46.3" },
 ]
 
 [[package]]
