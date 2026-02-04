@@ -1,5 +1,5 @@
 import os, torchvision, transformers
-torchvision.set_video_backend('video_reader')
+torchvision.set_video_backend('pyav')
 from functools import partial
 import gradio as gr
 
