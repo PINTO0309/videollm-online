@@ -6,7 +6,7 @@ from data.utils import ffmpeg_once
 from .inference import LiveInfer
 logger = transformers.logging.get_logger('liveinfer')
 
-# python -m demo.cli --resume_from_checkpoint ... 
+# python -m demo.cli --resume_from_checkpoint ...
 
 def main(liveinfer: LiveInfer, src_video_path: str, query: str):
     name, ext = os.path.splitext(src_video_path)
@@ -16,7 +16,7 @@ def main(liveinfer: LiveInfer, src_video_path: str, query: str):
         os.makedirs(os.path.dirname(ffmpeg_video_path), exist_ok=True)
         ffmpeg_once(src_video_path, ffmpeg_video_path, fps=liveinfer.frame_fps, resolution=liveinfer.frame_resolution)
         logger.warning(f'{src_video_path} -> {ffmpeg_video_path}, {liveinfer.frame_fps} FPS, {liveinfer.frame_resolution} Resolution')
-    
+
     liveinfer.load_video(ffmpeg_video_path)
     if query:
         liveinfer.input_query_stream(query, video_time=0.0)
@@ -26,7 +26,7 @@ def main(liveinfer: LiveInfer, src_video_path: str, query: str):
 
     timecosts = []
     pbar = tqdm.tqdm(total=liveinfer.num_video_frames, bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt}{postfix}]")
-    history = {'video_path': src_video_path, 'frame_fps': liveinfer.frame_fps, 'conversation': []} 
+    history = {'video_path': src_video_path, 'frame_fps': liveinfer.frame_fps, 'conversation': []}
     for i in range(100):
         # liveinfer.frame_token_interval_threshold -= 0.00175 # decay
         start_time = time.time()
