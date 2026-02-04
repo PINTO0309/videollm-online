@@ -9,3 +9,4 @@ __pycache__/
 *.wav
 /demo/rendering/*.mp4
 .DS_Store
+videollm_online.egg-info/
