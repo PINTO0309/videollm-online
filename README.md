@@ -64,7 +64,7 @@ Ensure you have Miniconda and Python version >= 3.10 installed, then run:
   # the RAM consumption limit can be kept to around 50GB.
   export MAX_JOBS=2
 
-  uv pip install setuptools wheel
+  uv pip install setuptools==80.10.2 wheel==0.46.3
   uv sync --no-build-isolation --no-cache
 
   git clone https://github.com/2noise/ChatTTS
