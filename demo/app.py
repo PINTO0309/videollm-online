@@ -1,4 +1,4 @@
-import os, torchvision, transformers
+import os, torchvision, transformers, inspect
 torchvision.set_video_backend('pyav')
 from functools import partial
 import gradio as gr
@@ -17,6 +17,16 @@ css = """
     #gr_video {max-height: 480px;}
     #gr_chatbot {max-height: 480px;}
 """
+
+def _supports_param(obj, param_name: str) -> bool:
+    try:
+        return param_name in inspect.signature(obj.__init__).parameters
+    except (ValueError, TypeError):
+        return False
+
+CHATBOT_SUPPORTS_TYPE = _supports_param(gr.Chatbot, "type")
+CHATINTERFACE_SUPPORTS_TYPE = _supports_param(gr.ChatInterface, "type")
+CHATBOT_FORMAT = "tuples" if CHATBOT_SUPPORTS_TYPE else "messages"
 
 get_gr_video_current_time = """async (video, _) => {
   const videoEl = document.querySelector("#gr_video video");
@@ -40,17 +50,22 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
             gr.Markdown("- This work is primarily done at a university, and our resources are limited. Our model is trained with limited data, so it may not solve very complicated questions. However, we have seen the potential of 'learning in streaming'. We are working on new data method to scale streaming dialogue data to our next model.")
         
         with gr.Column():
+            chat_interface_kwargs = {}
+            if CHATINTERFACE_SUPPORTS_TYPE:
+                chat_interface_kwargs["type"] = CHATBOT_FORMAT
+            chatbot_kwargs = {
+                "elem_id": "gr_chatbot",
+                "label": "chatbot",
+                "avatar_images": ("demo/user_avatar.png", "demo/assistant_avatar.png"),
+                "render": False,
+            }
+            if CHATBOT_SUPPORTS_TYPE:
+                chatbot_kwargs["type"] = CHATBOT_FORMAT
             gr_chat_interface = gr.ChatInterface(
                 fn=liveinfer.input_query_stream,
-                type="tuples",
-                chatbot=gr.Chatbot(
-                    elem_id="gr_chatbot",
-                    label='chatbot',
-                    avatar_images=('demo/user_avatar.png', 'demo/assistant_avatar.png'),
-                    render=False,
-                    type="tuples",
-                ),
+                chatbot=gr.Chatbot(**chatbot_kwargs),
                 examples=['Please narrate the video in real time.', 'Please describe what I am doing.', 'Could you summarize what have been done?', 'Hi, guide me the next step.'],
+                **chat_interface_kwargs,
             )
             
             def gr_frame_token_interval_threshold_change(frame_token_interval_threshold):
@@ -61,9 +76,26 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
         gr_video_time = gr.Number(value=0, visible=False)
         gr_liveinfer_queue_refresher = gr.Number(value=False, visible=False)
 
-        def _normalize_history(history):
+        def _normalize_history(history, target_format: str):
             if history is None:
                 return []
+            if target_format == "messages":
+                normalized = []
+                for item in history:
+                    if item is None:
+                        continue
+                    if isinstance(item, dict) and "role" in item and "content" in item:
+                        normalized.append({"role": item["role"], "content": item["content"]})
+                        continue
+                    if isinstance(item, (list, tuple)) and len(item) == 2:
+                        user_msg, assistant_msg = item
+                        if user_msg:
+                            normalized.append({"role": "user", "content": str(user_msg)})
+                        if assistant_msg:
+                            normalized.append({"role": "assistant", "content": str(assistant_msg)})
+                        continue
+                    normalized.append({"role": "assistant", "content": str(item)})
+                return normalized
             normalized = []
             for item in history:
                 if item is None:
@@ -77,12 +109,17 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
                         normalized.append([item[0], ""])
                     else:
                         normalized.append(["", ""])
+                elif isinstance(item, dict) and "role" in item and "content" in item:
+                    if item["role"] == "user":
+                        normalized.append([item["content"], ""])
+                    else:
+                        normalized.append(["", item["content"]])
                 else:
                     normalized.append([str(item), ""])
             return normalized
 
         def gr_video_change(src_video_path, history, video_time, gate):
-            history = _normalize_history(history)
+            history = _normalize_history(history, CHATBOT_FORMAT)
             name, ext = os.path.splitext(src_video_path)
             ffmpeg_video_path = os.path.join('demo/assets/cache', name + f'_{liveinfer.frame_fps}fps_{liveinfer.frame_resolution}' + ext)
             if not os.path.exists(ffmpeg_video_path):
@@ -93,7 +130,13 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
             liveinfer.input_video_stream(0)
             query, response = liveinfer()
             if query or response:
-                history.append([query, response])
+                if CHATBOT_FORMAT == "messages":
+                    if query:
+                        history.append({"role": "user", "content": str(query)})
+                    if response:
+                        history.append({"role": "assistant", "content": str(response)})
+                else:
+                    history.append([query, response])
             return history, video_time + 1 / liveinfer.frame_fps, not gate
         gr_video.change(
             gr_video_change, inputs=[gr_video, gr_chat_interface.chatbot, gr_video_time, gr_liveinfer_queue_refresher], 
@@ -106,16 +149,26 @@ with gr.Blocks(title="VideoLLM-online", css=css) as demo:
         gr_video_time.change(gr_video_time_change, [gr_video, gr_video_time], [gr_video_time], js=get_gr_video_current_time)
 
         def gr_liveinfer_queue_refresher_change(history):
-            history = _normalize_history(history)
+            history = _normalize_history(history, CHATBOT_FORMAT)
             while True:
                 query, response = liveinfer()
                 if query or response:
-                    if not history or query:
-                        history.append([query or "", response or ""])
-                    else:
-                        current = history[-1][1] or ""
+                    if CHATBOT_FORMAT == "messages":
+                        if query:
+                            history.append({"role": "user", "content": str(query)})
                         if response:
-                            history[-1][1] = f'{current}\n{response}' if current else response
+                            if history and history[-1].get("role") == "assistant":
+                                current = history[-1].get("content") or ""
+                                history[-1]["content"] = f'{current}\n{response}' if current else str(response)
+                            else:
+                                history.append({"role": "assistant", "content": str(response)})
+                    else:
+                        if not history or query:
+                            history.append([query or "", response or ""])
+                        else:
+                            current = history[-1][1] or ""
+                            if response:
+                                history[-1][1] = f'{current}\n{response}' if current else response
                 yield history
         gr_liveinfer_queue_refresher.change(gr_liveinfer_queue_refresher_change, inputs=[gr_chat_interface.chatbot], outputs=[gr_chat_interface.chatbot])
     
