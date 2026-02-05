@@ -1,4 +1,5 @@
 import torch, torchvision, transformers, collections
+from transformers import Cache
 from dataclasses import asdict
 from torchvision.io import read_video
 
@@ -28,6 +29,7 @@ class LiveInfer:
         self.system_prompt = args.system_prompt
         self.inplace_output_ids = torch.zeros(1, 100, device='cuda', dtype=torch.long)
         self.frame_token_interval_threshold = 0.725
+        self.kv_cache_max_tokens = getattr(args, "kv_cache_max_tokens", 0) or 0
         self.eos_token_id = self.model.config.eos_token_id
         self._start_ids = self.tokenizer.apply_chat_template([{'role': 'system', 'content': self.system_prompt}], add_stream_prompt=True, return_tensors='pt').to('cuda')
         self._added_stream_prompt_ids = self.tokenizer.apply_chat_template([{}], add_stream_prompt=True, return_tensors='pt').to('cuda')
@@ -44,6 +46,7 @@ class LiveInfer:
             self.last_ids = self._added_stream_generation_ids
         inputs_embeds = self.model.get_input_embeddings()(self.last_ids)
         output_ids, self.past_key_values = fast_greedy_generate(model=self.model, inputs_embeds=inputs_embeds, past_key_values=self.past_key_values, eos_token_id=self.eos_token_id, inplace_output_ids=self.inplace_output_ids)
+        self._trim_past_key_values()
         self.last_ids = output_ids[:, -1:]
         if query:
             query = f'(Video Time = {video_time}s) User: {query}'
@@ -67,6 +70,7 @@ class LiveInfer:
             ], dim=1)
             outputs = self.model(inputs_embeds=inputs_embeds, use_cache=True, past_key_values=self.past_key_values)
             self.past_key_values = outputs.past_key_values
+            self._trim_past_key_values()
             # 2. if the same time, response after frame at that time
             if self.query_queue and video_time >= self.query_queue[0][0]:
                 video_time, query = self.query_queue.popleft()
@@ -88,6 +92,22 @@ class LiveInfer:
         self.video_tensor = None
         self.last_ids = torch.tensor([[]], device='cuda', dtype=torch.long)
         self.past_key_values = None
+
+    def _trim_past_key_values(self):
+        max_tokens = self.kv_cache_max_tokens
+        if not max_tokens or self.past_key_values is None:
+            return
+        if isinstance(self.past_key_values, Cache):
+            if self.past_key_values.get_seq_length() > max_tokens:
+                self.past_key_values.crop(max_tokens)
+            return
+        try:
+            seq_len = self.past_key_values[0][0].size(-2)
+        except Exception:
+            return
+        if seq_len > max_tokens:
+            start = seq_len - max_tokens
+            self.past_key_values = self.model.trim_past_key_values(self.past_key_values, start, seq_len)
 
     def input_query_stream(self, query, history=None, video_time=None):
         if video_time is None:

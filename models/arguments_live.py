@@ -23,6 +23,7 @@ class LiveTrainingArguments(TrainingArguments):
     frame_resolution: int = 384
     frame_token_interval: str  = None
     frame_token_interval_threshold: float = 0.0
+    kv_cache_max_tokens: int = 0  # 0 disables; otherwise keep only last N tokens in KV cache
     augmentation: bool = False
     attn_implementation: str = 'flash_attention_2'
     output_dir: str = 'outputs/debug'

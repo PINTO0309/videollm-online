@@ -106,20 +106,22 @@ python -m demo.cli \
 python -m demo.stream_cli \
 --source video \
 --video_path /path/to/video.mp4 \
---frame_token_interval_threshold 0.9 \
+--frame_token_interval_threshold 0.725 \
 --output_interval 3 \
---input_fps 10 \
+--input_fps 2 \
 --query "Please narrate the video in real time." \
---resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
+--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus \
+--kv_cache_max_tokens 4096
 
 python -m demo.stream_cli \
 --source webcam \
 --webcam_index 0 \
---frame_token_interval_threshold 0.9 \
+--frame_token_interval_threshold 0.725 \
 --output_interval 3 \
---input_fps 10 \
+--input_fps 2 \
 --query "Please narrate the video in real time." \
---resume_from_checkpoint chenjoya/videollm-online-8b-v1plus
+--resume_from_checkpoint chenjoya/videollm-online-8b-v1plus \
+--kv_cache_max_tokens 4096
 ```
 
 - (Deprecated, HF Spaces too slow) Try demo at <a href="https://huggingface.co/spaces/chenjoya/videollm-online" target="_blank"> <img alt="Demo" src="https://img.shields.io/badge/🤗 Hugging Face Spaces-ffc107?color=ffc107" /> </a>

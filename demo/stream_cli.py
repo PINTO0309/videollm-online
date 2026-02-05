@@ -65,7 +65,7 @@ def _frame_to_tensor(frame_rgb):
     return torch.from_numpy(frame_rgb).permute(2, 0, 1).contiguous()
 
 
-def _process_queue(liveinfer: LiveInfer, buffer: list[str]):
+def _process_queue(liveinfer: LiveInfer, buffer: list[str], last_response: str | None):
     while True:
         if torch.cuda.is_available():
             torch.cuda.synchronize()
@@ -80,7 +80,11 @@ def _process_queue(liveinfer: LiveInfer, buffer: list[str]):
         if query:
             buffer.append(str(query))
         if response:
-            buffer.append(str(response))
+            response_text = str(response)
+            if response_text != last_response:
+                buffer.append(response_text)
+                last_response = response_text
+    return last_response
 
 
 def _maybe_emit(buffer: list[str], last_output_time: float, now: float, output_interval: float):
@@ -131,6 +135,7 @@ def main():
             liveinfer.input_query_stream(cli_args.query, video_time=0.0)
 
         buffer = []
+        last_response = None
         last_output_time = 0.0
         next_sample_time = 0.0
         input_interval = 1 / input_fps
@@ -153,7 +158,7 @@ def main():
                         continue
                     frame_tensor = _frame_to_tensor(resized)
                     liveinfer.input_frame_tensor(frame_tensor, video_time)
-                    _process_queue(liveinfer, buffer)
+                    last_response = _process_queue(liveinfer, buffer, last_response)
                     last_output_time = _maybe_emit(buffer, last_output_time, video_time, cli_args.output_interval)
             else:
                 start_time = time.time()
@@ -170,7 +175,7 @@ def main():
                         continue
                     frame_tensor = _frame_to_tensor(resized)
                     liveinfer.input_frame_tensor(frame_tensor, now)
-                    _process_queue(liveinfer, buffer)
+                    last_response = _process_queue(liveinfer, buffer, last_response)
                     last_output_time = _maybe_emit(buffer, last_output_time, now, cli_args.output_interval)
                     sleep_for = next_sample_time - (time.time() - start_time)
                     if sleep_for > 0:
