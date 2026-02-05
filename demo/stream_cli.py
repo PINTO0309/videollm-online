@@ -67,9 +67,16 @@ def _frame_to_tensor(frame_rgb):
 
 def _process_queue(liveinfer: LiveInfer, buffer: list[str]):
     while True:
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        start = time.perf_counter()
         query, response = liveinfer.step()
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+        elapsed = time.perf_counter() - start
         if query is None and response is None:
             break
+        print(f"[Inference] step_time={elapsed * 1000:.1f} ms", flush=True)
         if query:
             buffer.append(str(query))
         if response:
